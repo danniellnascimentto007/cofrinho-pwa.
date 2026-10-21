@@ -1,0 +1,170 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Cofrinho – guardar dinheiro com propósito</title>
+<meta name="description" content="Guarde dinheiro para o que importa. Simples, motivador e funciona offline.">
+<meta name="theme-color" content="#e8870e">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="icon" type="image/png" sizes="192x192" href="icons/icon-192.png">
+<link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="Cofrinho">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<style>
+:root{--bg:#fbf7ef;--card:#fff;--ink:#2a2a2a;--mut:#6f6a60;--acc:#e8870e;--acc2:#2f9e6b;--line:#eadfc8;--track:#f1e8d4;
+box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#171510;--card:#221f18;--ink:#f3eee2;--mut:#a69f8e;--acc:#f0a03c;--acc2:#4cc58c;--line:#373124;--track:#332e22}}
+:root[data-theme="dark"]{--bg:#171510;--card:#221f18;--ink:#f3eee2;--mut:#a69f8e;--acc:#f0a03c;--acc2:#4cc58c;--line:#373124;--track:#332e22}
+*{box-sizing:border-box}html{scroll-padding-top:env(safe-area-inset-top,0px)}
+body{margin:0;background:var(--bg);color:var(--ink);font:16px/1.45 system-ui,-apple-system,"Segoe UI",Roboto,sans-serif}
+main{max-width:480px;margin:0 auto;padding:20px 16px 48px}
+h1{font-size:26px;margin:8px 0 4px}h2{font-size:18px;margin:0 0 8px}
+p{margin:0 0 12px}.mut{color:var(--mut);font-size:14px}
+.card{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:16px;margin-bottom:14px}
+label{display:block;font-size:14px;color:var(--mut);margin:12px 0 4px}
+input,select{width:100%;padding:12px;border:1px solid var(--line);border-radius:10px;background:var(--bg);color:var(--ink);font:inherit}
+button{font:inherit;cursor:pointer;border:0;border-radius:12px;padding:12px 16px;background:var(--acc);color:#fff;font-weight:600}
+button.sec{background:var(--track);color:var(--ink)}button.full{width:100%;margin-top:14px}
+.emojis{display:flex;gap:8px;flex-wrap:wrap}.emojis button{background:var(--track);font-size:22px;padding:8px 12px}.emojis button.on{outline:2px solid var(--acc)}
+.bar{height:14px;background:var(--track);border-radius:99px;overflow:hidden;margin:10px 0 6px}
+.bar i{display:block;height:100%;background:linear-gradient(90deg,var(--acc),var(--acc2));border-radius:99px;transition:width .5s}
+.row{display:flex;gap:8px;align-items:center;justify-content:space-between}
+.big{font-size:30px;font-weight:700}
+.goal{cursor:pointer}.goal.main{border-color:var(--acc)}
+.badge{display:inline-block;font-size:13px;padding:4px 10px;border-radius:99px;background:var(--track);margin:0 6px 6px 0}
+.badge.on{background:var(--acc2);color:#fff}
+.tip{border-left:4px solid var(--acc);padding-left:12px}
+.quick{display:flex;gap:8px;margin-top:10px}.quick button{flex:1;padding:10px 4px}
+#toast{position:fixed;left:50%;bottom:calc(24px + env(safe-area-inset-bottom,0px));transform:translate(-50%,20px);background:var(--ink);color:var(--bg);padding:12px 18px;border-radius:12px;opacity:0;transition:.3s;pointer-events:none;max-width:90%;text-align:center}
+#toast.show{opacity:1;transform:translate(-50%,0)}
+.hist{font-size:14px;color:var(--mut);display:flex;justify-content:space-between;padding:4px 0;border-bottom:1px dashed var(--line)}
+a.link{color:var(--acc);background:none;padding:0;font-weight:600;text-decoration:underline}
+#install{display:none;position:fixed;left:12px;right:12px;bottom:calc(12px + env(safe-area-inset-bottom,0px));max-width:456px;margin:0 auto;background:var(--card);border:1px solid var(--acc);border-radius:16px;padding:14px;box-shadow:0 6px 24px rgba(0,0,0,.18);z-index:20}
+#install.show{display:block}#install p{margin:0 0 10px;font-size:14px}#install .row{justify-content:flex-end}
+</style>
+</head>
+<body>
+<main id="app"></main>
+<div id="toast"></div>
+<div id="install"><p id="itxt">📲 Instale o Cofrinho na sua tela inicial e use até sem internet.</p><div class="row"><button class="sec" id="ino">Agora não</button><button id="iok">Instalar</button></div></div>
+<script>
+var EMO=["🎮","✈️","📱","🎓","🏠","🚲","🎁","🛟"];
+var TIPS=["Guardar pouco todo mês vence guardar muito uma vez só. O hábito importa mais que o valor.","Dar um nome ao dinheiro (“viagem”, “celular”) diminui a vontade de gastar com outras coisas.","R$ 5 por semana viram R$ 260 em um ano, sem contar o que você pode adicionar no caminho.","Um bom truque: guarde primeiro, gaste depois. Separe o valor assim que o dinheiro chegar.","Esperar 48 horas antes de uma compra por impulso corta muitos gastos desnecessários.","Falhou uma semana? Sem problema. Retomar vale mais do que ser perfeito.","Metas com data são mais realizadas do que metas “um dia”.","Reserva de emergência é um cofrinho para imprevistos. Ela protege suas outras metas."];
+var S={goals:[],rem:{freq:"mensal",day:5},tipI:0,sel:0,view:"home"};
+try{var r=localStorage.getItem("cofrinho_v1");if(r)S=JSON.parse(r)}catch(e){}
+function save(){try{localStorage.setItem("cofrinho_v1",JSON.stringify(S))}catch(e){}}
+function brl(n){return n.toLocaleString("pt-BR",{style:"currency",currency:"BRL"})}
+function saved(g){return g.dep.reduce(function(a,d){return a+d.v},0)}
+function toast(m){var t=document.getElementById("toast");t.textContent=m;t.className="show";setTimeout(function(){t.className=""},2600)}
+var draft={emoji:"🎮"};
+function go(v,i){S.view=v;if(i!=null)S.sel=i;save();render()}
+function render(){
+  var a=document.getElementById("app");
+  if(!S.goals.length||S.view==="new")return newView(a);
+  if(S.view==="goal")return goalView(a);
+  homeView(a);
+}
+function newView(a){
+  var first=!S.goals.length;
+  a.innerHTML='<h1>'+(first?'Vamos começar? 🐷':'Novo cofrinho')+'</h1>'+
+  '<p class="mut">'+(first?'Antes de qualquer número, uma pergunta: ':'')+'<b>Pra que você quer guardar dinheiro?</b></p>'+
+  '<div class="card"><label>Seu objetivo</label><input id="n" placeholder="Ex.: Viagem com os amigos" maxlength="40">'+
+  '<label>Escolha um símbolo</label><div class="emojis" id="em">'+EMO.map(function(e){return '<button type="button" data-e="'+e+'" class="'+(e===draft.emoji?'on':'')+'">'+e+'</button>'}).join('')+'</div>'+
+  '<label>Quanto custa? (R$)</label><input id="v" type="number" inputmode="decimal" min="1" placeholder="1000">'+
+  '<label>Até quando? (opcional)</label><input id="d" type="date">'+
+  '<button class="full" id="ok">Criar cofrinho</button>'+(first?'':'<button class="full sec" id="cn">Cancelar</button>')+'</div>';
+  document.getElementById("em").onclick=function(e){var b=e.target.closest("button");if(!b)return;draft.emoji=b.dataset.e;[].forEach.call(this.children,function(x){x.className=x===b?"on":""})};
+  document.getElementById("ok").onclick=function(){
+    var n=document.getElementById("n").value.trim(),v=parseFloat(document.getElementById("v").value),d=document.getElementById("d").value;
+    if(!n||!(v>0)){toast("Preencha o objetivo e o valor");return}
+    S.goals.push({id:Date.now(),name:n,target:v,date:d,emoji:draft.emoji,dep:[],hit:[]});
+    S.sel=S.goals.length-1;S.view="goal";save();render();toast("Cofrinho criado! Que tal um primeiro depósito pequeno?");
+  };
+  var c=document.getElementById("cn");if(c)c.onclick=function(){go("home")};
+}
+function homeView(a){
+  var h='<h1>Seus cofrinhos</h1><p class="mut">Toque em um cofrinho para guardar.</p>';
+  S.goals.forEach(function(g,i){
+    var s=saved(g),p=Math.min(100,Math.round(s/g.target*100));
+    h+='<div class="card goal'+(i===0?' main':'')+'" data-i="'+i+'"><div class="row"><h2>'+g.emoji+' '+esc(g.name)+'</h2>'+(i===0?'<span class="badge on">principal</span>':'')+'</div>'+
+    '<div class="bar"><i style="width:'+p+'%"></i></div><div class="row mut"><span>'+brl(s)+' de '+brl(g.target)+'</span><span>'+p+'%</span></div></div>';
+  });
+  h+='<button class="full" id="nw">+ Criar outro cofrinho</button>';
+  h+='<div class="card tip" style="margin-top:18px"><b>💡 Você sabia?</b><p style="margin:6px 0 10px">'+TIPS[S.tipI%TIPS.length]+'</p><button class="sec" id="nt">Outra dica</button></div>';
+  h+=remCard();
+  a.innerHTML=h;
+  [].forEach.call(a.querySelectorAll(".goal"),function(e){e.onclick=function(){go("goal",+e.dataset.i)}});
+  document.getElementById("nw").onclick=function(){go("new")};
+  document.getElementById("nt").onclick=function(){S.tipI++;save();render()};
+  remBind();
+}
+function remCard(){
+  return '<div class="card"><h2>🔔 Lembrete</h2><div class="row"><select id="rf"><option value="mensal"'+(S.rem.freq==="mensal"?" selected":"")+'>Todo mês, no dia</option><option value="semanal"'+(S.rem.freq==="semanal"?" selected":"")+'>Toda semana (segunda)</option></select>'+
+  '<input id="rd" type="number" min="1" max="28" value="'+S.rem.day+'" style="width:80px"></div>'+
+  '<p class="mut" style="margin-top:10px">Neste protótipo o lembrete só é salvo. No app real, ele chegaria como notificação.</p></div>';
+}
+function remBind(){
+  var f=document.getElementById("rf"),d=document.getElementById("rd");
+  f.onchange=function(){S.rem.freq=f.value;save();toast("Lembrete atualizado")};
+  d.onchange=function(){S.rem.day=Math.min(28,Math.max(1,+d.value||1));save();toast("Lembrete atualizado")};
+}
+function goalView(a){
+  var g=S.goals[S.sel];if(!g){go("home");return}
+  var s=saved(g),p=Math.min(100,Math.round(s/g.target*100)),left=Math.max(0,g.target-s),plan="";
+  if(left===0)plan='🎉 Meta alcançada! Você conseguiu.';
+  else if(g.date){
+    var days=Math.ceil((new Date(g.date+"T12:00:00")-new Date())/864e5);
+    if(days<=0)plan='O prazo chegou. Que tal definir uma nova data?';
+    else{var w=Math.max(1,Math.ceil(days/7));plan='Faltam '+brl(left)+'. Guardando <b>'+brl(left/w)+' por semana</b> (ou '+brl(left/Math.max(1,Math.ceil(days/30)))+' por mês), você chega lá a tempo.'}
+  }else plan='Faltam '+brl(left)+'. Guardando '+brl(Math.max(5,left/20))+' por semana, você chega lá em cerca de 20 semanas.';
+  var ms=[25,50,75,100];
+  var h='<button class="sec" id="bk">← Voltar</button><div class="card" style="margin-top:14px"><div class="mut">'+g.emoji+' '+esc(g.name)+'</div><div class="big">'+brl(s)+'</div>'+
+  '<div class="bar"><i style="width:'+p+'%"></i></div><div class="row mut"><span>Meta: '+brl(g.target)+'</span><span>'+p+'%</span></div><p style="margin-top:12px">'+plan+'</p></div>';
+  h+='<div class="card"><h2>Guardar agora</h2>'+(g.dep.length?'':'<p class="mut">Dica: o primeiro passo é o mais difícil. Comece com um valor pequeno.</p>')+
+  '<div class="quick"><button data-q="5">+R$ 5</button><button data-q="10">+R$ 10</button><button data-q="20">+R$ 20</button><button data-q="50">+R$ 50</button></div>'+
+  '<div class="row" style="margin-top:10px"><input id="cv" type="number" inputmode="decimal" min="0.01" placeholder="Outro valor"><button id="cb">Guardar</button></div></div>';
+  h+='<div class="card"><h2>Conquistas</h2>'+ms.map(function(m){return '<span class="badge'+(p>=m?' on':'')+'">'+(p>=m?'🏆 ':'🔒 ')+m+'%</span>'}).join('')+
+  '<span class="badge'+(g.dep.length>=3?' on':'')+'">'+(g.dep.length>=3?'⭐ ':'🔒 ')+'3 depósitos</span></div>';
+  if(g.dep.length)h+='<div class="card"><h2>Histórico</h2>'+g.dep.slice(-5).reverse().map(function(d){return '<div class="hist"><span>'+new Date(d.d).toLocaleDateString("pt-BR")+'</span><b>+ '+brl(d.v)+'</b></div>'}).join('')+'</div>';
+  h+='<div class="card"><p class="mut" style="margin:0">Este protótipo só registra o que você guarda. Seu dinheiro fica onde estiver hoje (poupança, carteira, cofre real).</p></div>';
+  a.innerHTML=h;
+  document.getElementById("bk").onclick=function(){go("home")};
+  [].forEach.call(a.querySelectorAll("[data-q]"),function(b){b.onclick=function(){add(g,+b.dataset.q)}});
+  document.getElementById("cb").onclick=function(){var v=parseFloat(document.getElementById("cv").value);if(!(v>0)){toast("Digite um valor");return}add(g,v)};
+}
+function add(g,v){
+  var before=Math.min(100,saved(g)/g.target*100);
+  g.dep.push({v:v,d:Date.now()});
+  var after=Math.min(100,saved(g)/g.target*100),msg="Boa! Mais um passo. 👏";
+  [25,50,75,100].forEach(function(m){if(before<m&&after>=m)msg=m===100?"🎉 Você alcançou sua meta!":"🏆 Marco de "+m+"% desbloqueado!"});
+  if(g.dep.length===1)msg="🌱 Primeiro depósito! O hábito começou.";
+  save();render();toast(msg);
+}
+function esc(t){return t.replace(/[&<>"]/g,function(c){return {"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]})}
+render();
+/* PWA: service worker + instalação */
+if("serviceWorker" in navigator){window.addEventListener("load",function(){navigator.serviceWorker.register("sw.js").catch(function(){})})}
+(function(){
+  var dp=null,box=document.getElementById("install"),dismissed=false;
+  try{dismissed=localStorage.getItem("cofrinho_inst")==="1"}catch(e){}
+  var standalone=window.matchMedia("(display-mode: standalone)").matches||navigator.standalone;
+  function hide(){box.className="";try{localStorage.setItem("cofrinho_inst","1")}catch(e){}}
+  document.getElementById("ino").onclick=hide;
+  window.addEventListener("beforeinstallprompt",function(e){e.preventDefault();dp=e;if(!dismissed&&!standalone)box.className="show"});
+  document.getElementById("iok").onclick=function(){
+    if(dp){dp.prompt();dp.userChoice.then(function(){dp=null;hide()})}else hide();
+  };
+  window.addEventListener("appinstalled",function(){box.className=""});
+  var ios=/iphone|ipad|ipod/i.test(navigator.userAgent);
+  if(ios&&!standalone&&!dismissed){
+    document.getElementById("itxt").innerHTML="📲 Para instalar: toque em <b>Compartilhar</b> e depois em <b>Adicionar à Tela de Início</b>.";
+    document.getElementById("iok").style.display="none";
+    box.className="show";
+  }
+})();
+</script>
+</body>
+</html>
